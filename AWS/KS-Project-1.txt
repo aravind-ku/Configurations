@@ -1,0 +1,173 @@
+vim .bashrc
+export PATH=$PATH:/usr/local/bin/
+source .bashrc
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip -o awscliv2.zip
+sudo ./aws/install --update
+aws --version  
+
+curl -LO "https://dl.k8s.io/release/$(curl -Ls https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+kubectl version
+
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+eksctl version
+
+
+
+
+eksctl create cluster --name=EKS-1 --region=ap-south-1 --zones=ap-south-1a,ap-south-1b --without-nodegroup
+
+eksctl utils associate-iam-oidc-provider --region ap-south-1 --cluster EKS-1 --approve
+
+export AWS_REGION=ap-south-1
+eksctl update addon --name vpc-cni --cluster EKS-1 --force
+
+eksctl create nodegroup \
+  --cluster=EKS-1 \
+  --region=ap-south-1 \
+  --name=node2 \
+  --node-type=t3.medium \
+  --nodes=3 \
+  --nodes-min=2 \
+  --nodes-max=4 \
+  --node-volume-size=20 \
+  --ssh-access \
+  --ssh-public-key=projectkey \
+  --managed \
+  --asg-access \
+  --external-dns-access \
+  --full-ecr-access \
+  --appmesh-access \
+  --alb-ingress-access
+
+vim tools.sh
+
+yum install git -y
+sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+yum install java-17-amazon-corretto -y
+yum install jenkins -y
+systemctl start jenkins.service
+systemctl status jenkins.service
+yum install docker -y
+systemctl start docker
+chmod 777 ///var/run/docker.sock
+
+kubectl create ns weapps
+
+vim service.yml
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: flm
+  namespace: webapps
+
+kubectl create -f service.yml
+kubectl get serviceaccount -n webapps
+
+vim role.yml
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: app-role
+  namespace: webapps
+rules:
+  - apiGroups:
+    - ""
+    - apps
+    - autoscaling
+    - batch
+    - extensions
+    - policy
+    - rbac.authorization.k8s.io
+    resources:
+      - pods
+      - componentstatuses
+      - configmaps
+      - daemonsets
+      - deployments
+      - events
+      - endpoints
+      - horizontalpodautoscalers
+      - ingress
+      - jobs
+      - limitranges
+      - namespaces
+      - nodes
+      - pods
+      - persistentvolumes
+      - persistentvolumeclaims
+      - resourcequotas
+      - replicasets
+      - replicationcontrollers
+      - serviceaccounts
+      - services
+    verbs: ["get","list","watch","create","update","patch","delete"]
+
+kubectl create -f role.yml
+kubectl get role -n webapps
+
+vim rolebindin
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: app-rb
+  namespace: webapps
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: app-role
+subjects:
+  - namespace: webapps
+    kind: ServiceAccount
+    name: flm
+
+kubectl create -f rolebinding.yml
+kubectl get rolebinding -n webapps
+
+
+vim secret.yml
+---
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+  name: mysecret
+  namespace: webapps
+  annotations:
+    kubernetes.io/service-account.name: flm
+
+kubectl create -f secret.yml
+kubectl get secret -n webapps
+
+
+
+jenkins script:
+
+pipeline {
+    agent any
+    stages {
+        stage ("Build") {
+            steps {
+                sh 'docker build -t aravind53/myweb:wedding'
+            }
+        }
+        stage ("push") {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-cred') {
+                       sh 'docker push aravind53/myweb:wedding'
+                    }
+                }
+            }
+        }
+    }
+}
+

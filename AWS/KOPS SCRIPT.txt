@@ -1,0 +1,45 @@
+STEP-1: LAUNCH INSTANCE WITH T2.MEDIUM AND 30 GB SSD  
+
+ATTACH THE IAM ROLE
+
+STEP-2: INSTALL AWS CLI
+		curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+		unzip awscliv2.zip
+		sudo ./aws/install
+		TO  CHECK VERSION: /usr/local/bin/aws --version
+		TO SET PATH: vim .bashrc
+				 export PATH=$PATH:/usr/local/bin/
+				 source .bashrc
+				 aws --version
+KOPS:     curl -Lo kops \
+  "https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64"
+chmod +x kops && sudo mv kops /usr/local/bin/
+
+Kubectl:  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x kubectl
+mv kubectl /usr/local/bin/kubectl
+
+S3 Bucket: aws s3 ls
+aws s3 mb s3://aravind.sushma.k8s
+
+export KOPS_STATE_STORE=s3://aravind.sushma.k8s
+
+kops create cluster --name aravind55.k8s.local \
+--zones ap-south-1a,ap-south-1b \
+--control-plane-size t2.medium \
+--control-plane-count 1 \
+--control-plane-volume-size 20 \
+--node-size t2.micro \
+--node-count 1 \
+--image ami-0da59f1af71ea4ad2 
+
+		 
+		
+Suggestions:
+ * validate cluster: kops validate cluster --wait 10m
+ * list nodes: kubectl get nodes --show-labels
+ * ssh to a control-plane node: ssh -i ~/.ssh/id_rsa ubuntu@
+ * the ubuntu user is specific to Ubuntu. If not using Ubuntu please use the appropriate user based on your OS.
+ * read about installing addons at: https://kops.sigs.k8s.io/addons.
+
+

@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Instagram</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        background: #fafafa;
+        color: #262626;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .page {
+        width: 100%;
+        max-width: 1000px;
+        padding: 32px 16px;
+      }
+
+      .hero {
+        display: flex;
+        justify-content: center;
+        gap: 32px;
+        flex-wrap: wrap;
+      }
+
+      .phone-screen {
+        display: none;
+      }
+
+      .column {
+        width: 100%;
+        max-width: 350px;
+      }
+
+      .auth-card,
+      .auth-card--secondary,
+      .download-card {
+        width: 100%;
+        background: #fff;
+        border: 1px solid #dbdbdb;
+        border-radius: 1px;
+        text-align: center;
+      }
+
+      .auth-card {
+        padding: 42px 40px 32px;
+        margin-bottom: 10px;
+      }
+
+      .logo {
+        font-family: "Billabong", cursive;
+        font-size: 48px;
+        margin-bottom: 24px;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #dbdbdb;
+        border-radius: 4px;
+        background: #fafafa;
+        font-size: 14px;
+      }
+
+      button {
+        width: 100%;
+        margin-top: 8px;
+        padding: 10px 0;
+        border: none;
+        border-radius: 4px;
+        background: #0095f6;
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .divider {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 16px 0;
+        color: #8e8e8e;
+        font-size: 13px;
+      }
+
+      .divider::before,
+      .divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #dbdbdb;
+        margin: 0 12px;
+      }
+
+      .facebook-login {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #385185;
+        font-weight: 600;
+        text-decoration: none;
+        margin-bottom: 14px;
+      }
+
+      .facebook-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border-radius: 3px;
+        background: #385185;
+        color: white;
+        font-size: 12px;
+      }
+
+      .forgot {
+        display: block;
+        color: #00376b;
+        font-size: 12px;
+        text-decoration: none;
+        margin-top: 12px;
+      }
+
+      .auth-card--secondary {
+        padding: 16px 0;
+        margin-bottom: 10px;
+      }
+
+      .auth-card--secondary p {
+        margin: 0;
+        font-size: 14px;
+      }
+
+      .auth-card--secondary a {
+        color: #0095f6;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .download-card {
+        padding: 16px 0 24px;
+      }
+
+      .download-card p {
+        margin: 0 0 12px;
+        font-size: 14px;
+        color: #8e8e8e;
+      }
+
+      .stores {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .store {
+        display: inline-flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        width: 136px;
+        min-height: 44px;
+        padding: 10px;
+        border-radius: 6px;
+        background: #000;
+        color: #fff;
+        text-decoration: none;
+        font-size: 11px;
+      }
+
+      .store strong {
+        font-size: 14px;
+      }
+
+      .store--google {
+        background: #000;
+      }
+
+      .store--apple {
+        background: #000;
+      }
+
+      @media (min-width: 900px) {
+        .phone-screen {
+          display: block;
+          flex: 1 1 380px;
+          max-width: 380px;
+        }
+
+        .phone-frame {
+          width: 100%;
+          padding: 26px;
+          border-radius: 40px;
+          background: #000;
+          position: relative;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+          min-height: 640px;
+        }
+
+        .phone-screen__image {
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(180deg, #fafafa 0%, #fafafa 100%);
+          border-radius: 34px;
+          overflow: hidden;
+          position: relative;
+        }
+
+        .phone-screen__image::before {
+          content: "";
+          display: block;
+          width: 84%;
+          height: 94%;
+          margin: 24px auto;
+          background: linear-gradient(
+            180deg,
+            #d8d8d8 0%,
+            #f4f4f4 50%,
+            #d8d8d8 100%
+          );
+          border-radius: 28px;
+          box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="hero">
+        <div class="phone-screen">
+          <div class="phone-frame">
+            <div class="phone-screen__image"></div>
+          </div>
+        </div>
+
+        <div class="column">
+          <div class="auth-card">
+            <div class="logo">Instagram</div>
+            <form>
+              <input
+                type="text"
+                placeholder="Phone number, username, or email"
+                required
+              />
+              <input type="password" placeholder="Password" required />
+              <button type="submit">Log In</button>
+            </form>
+            <div class="divider">OR</div>
+            <a class="facebook-login" href="#">
+              <span class="facebook-icon">f</span>Log in with Facebook
+            </a>
+            <a class="forgot" href="#">Forgot password?</a>
+          </div>
+          <div class="auth-card auth-card--secondary">
+            <p>
+              Don't have an account?
+              <a href="#">Sign up</a>
+            </p>
+          </div>
+          <div class="download-card">
+            <p>Get the app.</p>
+            <div class="stores">
+              <a class="store store--apple" href="#">
+                <span>Download on the</span>
+                <strong>App Store</strong>
+              </a>
+              <a class="store store--google" href="#">
+                <span>Get it on</span>
+                <strong>Google Play</strong>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
