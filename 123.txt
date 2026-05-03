@@ -1,0 +1,88 @@
+sonar-scanner \
+  -Dsonar.projectKey=myproject \
+  -Dsonar.sources=. \
+  -Dsonar.host.url=http://15.206.27.203:9000 \
+  -Dsonar.login=sqp_79257ce4f02ede0042efd1650e3db09264c1af0e
+
+dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'Dp-Check'
+dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+
+
+pipeline{
+    agent any
+    tools {
+        jdk 'jdk17'
+        nodejs 'node16'
+    }
+    environment {
+        SCANNER_HOME = tool 'mysonar'
+    }
+    stages{
+        stage ("Clean WS"){
+            steps{
+                cleanWs()
+            }
+        }
+        stage ("code"){
+            steps{
+                git "https://github.com/devops0014/Zomato-Project.git"
+            }
+        }
+         stage("Sonarqube Analysis") {
+            steps{
+                withSonarQubeEnv('mysonar') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=zomato \
+                    -Dsonar.projectKey=zomato '''
+                }
+            }
+        }
+         stage ("Quality Gates") {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                }
+            }
+        }
+        stage ("node") {
+            steps {
+                sh 'npm install'
+            }
+        }
+        stage ("OWASP") {
+            steps {
+                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'Dp-Check'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+        stage ("BuildImage") {
+            steps {
+                sh 'docker build image1 .'
+            }
+        }
+        stage ("trivy") {
+            steps {
+                sh 'trivy fs . >> trivyfs.txt'
+            }
+        }
+        stage ("ImageScan") {
+            steps {
+                sh "trivy image image1"
+            }
+        }
+        stage ('DockerHub') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-password') {
+                        sh 'docker tag image1 shaikmustafa/dockerdeployment:v1'
+                        sh 'docker push shaikmustafa/dockerdeployment:v1'
+                    }
+                }
+            }
+        }
+        stage ("Deployment") {
+            steps {
+                sh 'docker run -itd --name cont-1 -p 1234:80 shaikmustafa/dockerdeployment:v1'
+            }
+        }
+    }
+}

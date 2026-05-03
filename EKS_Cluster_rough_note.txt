@@ -1,0 +1,56 @@
+eksctl create cluster --name=EKS-2 --region=ap-south-1 --zones=ap-south-1a,ap-south-1b --without-nodegroup
+
+eksctl utils associate-iam-oidc-provider --region ap-south-1 --cluster EKS-2 --approve
+
+eksctl update addon --name vpc-cni --cluster EKS-2 --force
+
+export AWS_REGION=ap-south-1
+eksctl update addon --name vpc-cni --cluster EKS-2 --force
+
+eksctl create nodegroup --cluster=EKS-2 --region=ap-south-1 --name=node2 --node-type=t3.medium --nodes=3 --nodes-min=2 --nodes-max=4 --node-volume-size=20 --ssh-access --ssh-public-key=projectkey --managed --asg-access --external-dns-access --full-ecr-access --appmesh-access --alb-ingress-access
+
+Means:
+
+Your kubeconfig is using old authentication API version v1alpha1.
+
+New AWS CLI & kubectl support only v1beta1 or v1.
+
+This mismatch causes authentication failure.
+
+eksctl create nodegroup \
+  --cluster=EKS-3 \
+  --region=ap-south-1 \
+  --name=node2 \
+  --node-type=t3.medium \
+  --nodes=3 \
+  --nodes-min=2 \
+  --nodes-max=4 \
+  --node-volume-size=20 \
+  --ssh-access \
+  --ssh-public-key=projectkey \
+  --managed \
+  --asg-access \
+  --external-dns-access \
+  --full-ecr-access \
+  --appmesh-access \
+  --alb-ingress-access
+
+
+
+eyJhbGciOiJSUzI1NiIsImtpZCI6IlljdThuSFNvNWYyV3hqZU9Fb29lWE01S3c4R1ZfZm1oS0FmaUIxaWdWR2sifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJ3ZWJhcHBzIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZWNyZXQubmFtZSI6Im15c2VjcmV0Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImZsbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjE3ZGYwZWM1LWY1MTgtNGY3NC04NzcxLThkZTU3MjVmYmI1YSIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDp3ZWJhcHBzOmZsbSJ9.n_MyjcTWFpsPIMpWIB_LKVQPMgHo0EECBel5HFL6EvqJmHXYefeL2lFPrmsrQVQGtduO3tCGdyQ8hIpe6WjoiLGESeGpH3D4ik_E-jlYXEl92nxFiVdLIQHST9f0mvrDRHdAn06M2TRoWqAiZjk-W5msUq98BanL7Ad4Z94EBU6ODLEBm2B2buIjotDtc30XOd0mQE3tMhOkcmoPqmiAS3zwovbgG4JfSHNP21LNdwMxcf_hOvetXEZbY_5BKp3hkahBWdPmy6XEqutTQZ7wXnOvVkFdXJlr9ohWGDusZ8zdooMt6HR2i8rg_aU5My_w3YXO2VY40R0IwWkm-jl9lA
+
+
+eksctl utils write-kubeconfig --cluster=EKS-1 --region=ap-south-1
+
+
+
+why we use the dynamoDB in s3
+☁️ backend.tf (optional) – for remote state (S3 + DynamoDB)
+terraform {
+  backend "s3" {
+    bucket         = "my-terraform-state-bucket"
+    key            = "eks/dev/terraform.tfstate"
+    region         = "ap-south-1"
+    dynamodb_table = "terraform-lock"
+  }
+}

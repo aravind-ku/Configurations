@@ -1,0 +1,77 @@
+pipeline {
+    agent any
+    tools {
+        jdk 'jdk17'
+        nodejs 'node16'
+    }
+    environment {
+        SCANNER_HOME = tool 'mysonar'
+    }
+    stages {
+        stage ("Clean WS") {
+            steps {
+                cleanWs()
+            }
+        }
+        stage ("Code") {
+            steps {
+                git "https://github.com/devops0014/Zomato-Project.git"
+            }
+        }
+        stage ("Sonarqube Analysis") {
+            steps {
+                withSonarQubeEnv('mysonar') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=zomato -Dsonar.projectKey=zomato '''
+                }
+            }
+        }
+        stage ("quality gates") {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-password'
+                }
+            }
+        }
+        stage ("node") {
+            steps {
+                sh 'npm install'
+            }
+        }
+        stage ("OWASP") {
+            steps {
+                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'dp-check'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+        stage ("BuildImage") {
+            steps {
+                sh 'docker build -t image1 .'
+            }
+        }
+        stage ("Trivy") {
+            steps {
+                sh 'trivy fs . >> trivyfs.txt'
+            }
+        }
+        stage ("ImageScan") {
+            steps {
+                sh "trivy image image1"
+            }
+        }
+        stage ("DockerHub") {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker-password') {
+                        sh 'docker tag image1 aravind53/dockerdeploy:v1'
+                        sh 'docker push aravind53/dockerdeploy:v1'
+                    }
+                }
+            }
+        }
+        stage ("Deployment") {
+            steps {
+                sh 'docker run -itd --name cont-1 -p 9090:80 aravind53/dockerdeploy:v1'
+            }
+        }
+    }
+}

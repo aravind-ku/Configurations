@@ -1,0 +1,38 @@
+cd /opt/
+wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-8.9.6.50800.zip
+unzip sonarqube-8.9.6.50800.zip
+amazon-linux-extras install java-openjdk11 -y
+useradd sonar
+chown -R sonar:sonar sonarqube-8.9.6.50800.zip
+su - sonar
+cd /opt/sonarqube-8.9.6.50800/bin/linux/
+sh sonar.sh start
+sh sonar.sh status
+
+
+Full Project Code Except the Artifact:
+======================================
+
+node {
+    // Get Maven path from Jenkins tools
+    def mvnHome = tool name: 'maven', type: 'hudson.tasks.Maven$MavenInstallation'
+
+    stage("Code") {
+        git "https://github.com/devops0014/one.git"
+    }
+
+    stage("Build") {
+        sh "${mvnHome}/bin/mvn clean package"
+    }
+
+    stage("CQA") {
+        withSonarQubeEnv(credentialsId: 'sonar') {
+            // Reuse mvnHome or define again if needed
+            def mavenHome = tool name: 'maven', type: 'hudson.tasks.Maven$MavenInstallation'
+            def mavenCMD = "${mavenHome}/bin/mvn"
+            sh "${mavenCMD} sonar:sonar"
+        }
+    }
+    stage ("Deploy") {}
+    deploy adapters: [tomcat9(credentialsId: 'tomcat', path: '', url: 'http://65.1.100.198:8080/')], contextPath: 'Vindu', war: 'target/*.war'
+}

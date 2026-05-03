@@ -1,0 +1,6 @@
+Install ingress:
+
+kubectl create -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.1/deploy/static/provider/cloud/deploy.yaml
+
+git clone https://github.com/mustafaprojectsindevops/kubernetes.git
+cd kubernetes/ingress
